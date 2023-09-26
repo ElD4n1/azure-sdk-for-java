@@ -39,6 +39,7 @@ import com.azure.storage.common.policy.ScrubEtagPolicy;
 import com.azure.storage.common.policy.StorageSharedKeyCredentialPolicy;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -165,7 +166,7 @@ public final class BuilderHelper {
      * @return The endpoint for the blob service.
      */
     public static String getEndpoint(BlobUrlParts parts) throws MalformedURLException {
-        if (ModelHelper.determineAuthorityIsIpStyle(parts.getHost())) {
+        if (determineAuthorityIsIpStyle(parts.getHost())) {
             return parts.getScheme() + "://" + parts.getHost() + "/" + parts.getAccountName();
         } else {
             return parts.getScheme() + "://" + parts.getHost();
@@ -195,7 +196,7 @@ public final class BuilderHelper {
      * @return The default {@link UserAgentPolicy} for the module.
      */
     private static UserAgentPolicy getUserAgentPolicy(Configuration configuration, HttpLogOptions logOptions,
-        ClientOptions clientOptions) {
+                                                      ClientOptions clientOptions) {
         configuration = (configuration == null) ? Configuration.NONE : configuration;
         String applicationId = CoreUtils.getApplicationId(clientOptions, logOptions);
         return new UserAgentPolicy(applicationId, CLIENT_NAME, CLIENT_VERSION, configuration);
@@ -218,5 +219,9 @@ public final class BuilderHelper {
         TracingOptions tracingOptions = clientOptions == null ? null : clientOptions.getTracingOptions();
         return TracerProvider.getDefaultProvider()
             .createTracer(CLIENT_NAME, CLIENT_VERSION, STORAGE_TRACING_NAMESPACE_VALUE, tracingOptions);
+    }
+
+    public static boolean determineAuthorityIsIpStyle(String authority) throws MalformedURLException {
+        return new URL("http://" +  authority).getPort() != -1;
     }
 }

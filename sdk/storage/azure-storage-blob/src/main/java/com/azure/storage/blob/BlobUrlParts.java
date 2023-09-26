@@ -102,7 +102,7 @@ public final class BlobUrlParts {
     public BlobUrlParts setHost(String host) {
         this.host = host;
         try {
-            this.isIpUrl = ModelHelper.determineAuthorityIsIpStyle(host);
+            this.isIpUrl = determineAuthorityIsIpStyle(host);
         } catch (MalformedURLException e) {
             throw LOGGER.logExceptionAsError(new IllegalStateException("Authority is malformed. Host: "
                 + host, e));
@@ -368,7 +368,7 @@ public final class BlobUrlParts {
         BlobUrlParts parts = new BlobUrlParts().setScheme(url.getProtocol());
 
         try {
-            if (ModelHelper.determineAuthorityIsIpStyle(url.getAuthority())) {
+            if (determineAuthorityIsIpStyle(url.getAuthority())) {
                 parseIpUrl(url, parts);
             } else {
                 parseNonIpUrl(url, parts);
@@ -470,5 +470,9 @@ public final class BlobUrlParts {
         }
 
         parts.isIpUrl = false;
+    }
+
+    public static boolean determineAuthorityIsIpStyle(String authority) throws MalformedURLException {
+        return new URL("http://" +  authority).getPort() != -1;
     }
 }
