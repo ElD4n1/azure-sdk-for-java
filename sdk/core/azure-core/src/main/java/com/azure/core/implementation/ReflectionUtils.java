@@ -48,12 +48,12 @@ public final class ReflectionUtils {
         MethodHandle jdkInternalPrivateLookupInConstructor = null;
 
         try {
+            methodHandlesPrivateLookupIn = lookup.findStatic(MethodHandles.class, "privateLookupIn",
+                MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class));
             Class<?> moduleClass = Class.forName("java.lang.Module");
             classGetModule = lookup.unreflect(Class.class.getDeclaredMethod("getModule"));
             moduleIsNamed = lookup.unreflect(moduleClass.getDeclaredMethod("isNamed"));
             moduleAddReads = lookup.unreflect(moduleClass.getDeclaredMethod("addReads", moduleClass));
-            methodHandlesPrivateLookupIn = lookup.findStatic(MethodHandles.class, "privateLookupIn",
-                MethodType.methodType(MethodHandles.Lookup.class, Class.class, MethodHandles.Lookup.class));
             moduleIsOpenUnconditionally = lookup.unreflect(moduleClass.getDeclaredMethod("isOpen", String.class));
             moduleIsOpenToOtherModule = lookup.unreflect(
                 moduleClass.getDeclaredMethod("isOpen", String.class, moduleClass));
@@ -70,7 +70,7 @@ public final class ReflectionUtils {
             }
         }
 
-        if (!moduleBased) {
+        if (!moduleBased && methodHandlesPrivateLookupIn == null) {
             try {
                 Constructor<MethodHandles.Lookup> privateLookupInConstructor =
                     MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
@@ -145,6 +145,8 @@ public final class ReflectionUtils {
 
                 // Otherwise, return the public lookup as there are no specialty ways to access the other module.
                 return MethodHandles.publicLookup();
+            } else if (METHOD_HANDLES_PRIVATE_LOOKUP_IN_METHOD_HANDLE != null) {
+                return performSafePrivateLookupIn(targetClass);
             } else {
                 return (MethodHandles.Lookup) JDK_INTERNAL_PRIVATE_LOOKUP_IN_CONSTRUCTOR.invoke(targetClass);
             }
