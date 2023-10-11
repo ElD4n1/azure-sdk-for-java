@@ -88,13 +88,18 @@ public final class XmlMapperFactory {
                 .initializeMapperBuilder((MapperBuilder<?, ?>) createXmlMapperBuilder.invokeStatic());
 
             defaultUseWrapper.invokeWithArguments(xmlMapperBuilder, false);
-            enableWriteXmlDeclaration.invokeWithArguments(xmlMapperBuilder, writeXmlDeclaration);
+            // TODO also make array in other XmlMapperFactory class?
+            Object writeXmlDeclarationArray = Array.newInstance(writeXmlDeclaration.getClass(), 1);
+            Array.set(writeXmlDeclarationArray, 0, writeXmlDeclaration);
+            enableWriteXmlDeclaration.invokeWithArguments(xmlMapperBuilder, writeXmlDeclarationArray);
 
             /*
              * In Jackson 2.12 the default value of this feature changed from true to false.
              * https://github.com/FasterXML/jackson/wiki/Jackson-Release-2.12#xml-module
              */
-            enableEmptyElementAsNull.invokeWithArguments(xmlMapperBuilder, emptyElementAsNull);
+            Object enableEmptyElementAsNullArray = Array.newInstance(emptyElementAsNull.getClass(), 1);
+            Array.set(enableEmptyElementAsNullArray, 0, emptyElementAsNull);
+            enableEmptyElementAsNull.invokeWithArguments(xmlMapperBuilder, enableEmptyElementAsNullArray);
 
             xmlMapper = xmlMapperBuilder.build();
         }  catch (Exception exception) {
